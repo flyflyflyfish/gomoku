@@ -527,6 +527,9 @@ chatForm.addEventListener('submit', e => {
   chatInput.value = '';
 });
 
+// 手机浏览器从快照恢复(bfcache)时 DOM/连接可能已过期, 强制刷新重建
+window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
+
 // ================== 启动 ==================
 (function boot() {
   me.token = localStorage.getItem('gg_wzq_token');

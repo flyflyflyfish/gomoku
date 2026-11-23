@@ -331,6 +331,8 @@ function scheduleAI(room) {
 // ================= HTTP =================
 const app = express();
 app.use(express.json({ limit: '64kb' }));
+// 页面与静态资源禁缓存: 手机自带浏览器会启发式缓存, 导致改版不生效
+app.use((req, res, next) => { res.setHeader('Cache-Control', 'no-cache, must-revalidate'); next(); });
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/healthz', (req, res) => res.json({ ok: true, rooms: rooms.size, online: onlineUsers.size }));
