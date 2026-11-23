@@ -199,13 +199,14 @@ function onState(m) {
 // ---------- 渲染 ----------
 function renderUser() {
   const loginBtn = $('showLoginBtn'), menu = $('userMenu'), drop = $('userDrop');
-  const fCard = $('friendsCard'), nRow = $('notifyRow');
+  const fCard = $('friendsCard'), nRow = $('notifyRow'), lobbyLogin = $('lobbyLoginBtn');
   drop.classList.add('hidden');
   if (me.user) {
     $('userBtn').textContent = '👤 ' + me.name;
     loginBtn.classList.add('hidden');
     menu.classList.remove('hidden');
     loginBox.classList.add('hidden');
+    lobbyLogin.classList.add('hidden');
     fCard.classList.remove('hidden');
     $('recordBtn').classList.remove('hidden');
     nRow.classList.toggle('hidden', !('Notification' in window));
@@ -213,8 +214,9 @@ function renderUser() {
   } else {
     menu.classList.add('hidden');
     loginBtn.classList.remove('hidden');
-    // 未登录: 大厅显示登录框(除非用户选择了跳过, 顶栏"登录"按钮随时可唤出)
-    if (mode !== 'game' && localStorage.getItem('gg_wzq_skip') !== '1') loginBox.classList.remove('hidden');
+    // 未登录: 登录卡默认收起, 只显示小"登录"按钮, 点击才展开
+    loginBox.classList.add('hidden');
+    lobbyLogin.classList.remove('hidden');
     $('recordBtn').classList.add('hidden');
     fCard.classList.add('hidden');
     nRow.classList.add('hidden');
@@ -445,12 +447,14 @@ $('regBtn').addEventListener('click', () => {
   if (!user || !pass) { setErr('请输入账号和密码'); return; }
   oSend({ t: 'register', user, pass, name });
 });
-$('skipBtn').addEventListener('click', () => { $('loginBox').classList.add('hidden'); localStorage.setItem('gg_wzq_skip', '1'); });
-$('showLoginBtn').addEventListener('click', () => {
-  localStorage.removeItem('gg_wzq_skip'); // 手动想登录了, 清掉跳过标记
+$('skipBtn').addEventListener('click', () => { $('loginBox').classList.add('hidden'); }); // 收起登录卡
+function expandLoginBox() {
+  $('lobbyLoginBtn').classList.add('hidden');
   $('loginBox').classList.remove('hidden');
   $('loginUser').focus();
-});
+}
+$('showLoginBtn').addEventListener('click', expandLoginBox);
+$('lobbyLoginBtn').addEventListener('click', expandLoginBox);
 $('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('gg_wzq_token');
   localStorage.removeItem('gg_wzq_sids');
@@ -526,8 +530,7 @@ chatForm.addEventListener('submit', e => {
 // ================== 启动 ==================
 (function boot() {
   me.token = localStorage.getItem('gg_wzq_token');
-  if (localStorage.getItem('gg_wzq_skip') === '1') $('loginBox').classList.add('hidden');
-  renderUser(); // 初始化顶栏 (未登录时显示"登录"按钮, 保证随时可以登录)
+  renderUser(); // 初始化顶栏与大厅 (未登录: 登录卡收起, 只显示小"登录"按钮)
   oConnect();
   // 首次进入: 有房号参数则直接进; 否则停在大厅
   if (pendingRoom) show(gameEl), (mode = 'game'), updateGameButtons();
