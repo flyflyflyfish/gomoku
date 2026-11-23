@@ -196,11 +196,17 @@ body {
   padding: 0 3px;
 }
 
-/* ---- 棋盘 (横竖屏自适应: 取视口短边) ---- */
+/* ---- 棋盘 (横竖屏自适应: 格子尺寸固定, 大盘整体放大, 超出视口部分可滑动) ---- */
+.board-wrap {
+  width: min(92vmin, 720px);
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .board {
   display: grid;
-  width: min(92vmin, 720px);
-  height: min(92vmin, 720px);
+  width: calc(var(--cells, 15) * min(6vmin, 48px));
   aspect-ratio: 1;
   margin: 0 auto;
   background: var(--wood);

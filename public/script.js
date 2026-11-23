@@ -388,6 +388,7 @@ function renderActive() {
 function renderBoard(s, locked) {
   boardEl.innerHTML = '';
   const size = s ? s.size : local.board.length;
+  boardEl.style.setProperty('--cells', size); // 大盘: 格子尺寸不变, 整体放大, 超出屏幕可滑动
   boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
   const b = s ? s.board : local.board;
   const line = new Set(s && s.winLine ? s.winLine.map(x => `${x.row},${x.col}`) : []);
