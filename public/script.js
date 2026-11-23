@@ -2,7 +2,7 @@
 // 本地对战(纯前端) / 在线对战(WebSocket): 账号与果果麻将通用, 好友邀请, AI 对手, 多局同时开
 'use strict';
 
-const SIZE_MAX = 19;
+const SIZE_MAX = 25;
 const EMPTY = 0, BLACK = 1, WHITE = 2;
 const BOT_LABEL = { easy: '🍎 新手', medium: '🍌 进阶', hard: '🍈 高手' };
 

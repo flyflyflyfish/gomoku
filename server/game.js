@@ -1,6 +1,6 @@
 'use strict';
 // 果果五子棋 · 棋盘核心逻辑 (纯函数, 服务端权威判定, 支持 15/19 路)
-const SIZES = [15, 19];
+const SIZES = [15, 19, 25];
 const EMPTY = 0;
 const BLACK = 1;
 const WHITE = 2;
