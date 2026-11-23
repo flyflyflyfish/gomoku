@@ -55,7 +55,9 @@
             <button id="localBtn" type="button" class="big">👫 本地对战</button>
             <button id="onlineBtn" type="button" class="big">🌐 在线对战</button>
           </div>
+          <button id="recordBtn" type="button" class="record-btn hidden">📋 我的战绩</button>
         </div>
+      </section>
 
         <!-- 好友 (登录后显示) -->
         <div id="friendsCard" class="card hidden">
@@ -66,13 +68,6 @@
           </div>
           <div id="friendReq" class="friend-list"></div>
           <div id="friendList" class="friend-list"></div>
-        </div>
-
-        <!-- 战绩 (登录后显示) -->
-        <div id="recordCard" class="card hidden">
-          <p class="card-title">我的战绩</p>
-          <p id="recordSummary" class="record-summary">…</p>
-          <div id="recordList" class="record-list"></div>
         </div>
       </section>
 
@@ -124,6 +119,15 @@
         <p id="msgErr"></p>
       </section>
     </main>
+
+    <!-- 战绩弹层 -->
+    <div id="recordModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-head"><span>📋 我的战绩</span><button id="recordClose" type="button">✕</button></div>
+        <p id="recordSummary" class="record-summary">…</p>
+        <div id="recordList" class="record-list"></div>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>

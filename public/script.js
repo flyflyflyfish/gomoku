@@ -27,12 +27,30 @@ $('fsBtn').addEventListener('click', () => {
 const local = { board: null, current: BLACK, over: false, mode: 'lobby', last: null };
 let localSize = 15;
 
-function localReset() {
+// 本地战局保存/恢复 (退出或刷新后不丢)
+function localSave() {
+  try {
+    localStorage.setItem('gg_wzq_local', JSON.stringify({
+      board: local.board, current: local.current, over: local.over, last: local.last,
+    }));
+  } catch (e) {}
+}
+
+function localReset(resume) {
   localSize = Number(localStorage.getItem('gg_wzq_local_size') || 15);
-  local.board = Array.from({ length: localSize }, () => Array(localSize).fill(EMPTY));
-  local.current = BLACK; local.over = false; local.last = null;
-  setStatus(`当前回合：黑棋 ● (${localSize} 路)`);
+  const saved = resume ? JSON.parse(localStorage.getItem('gg_wzq_local') || 'null') : null;
+  if (saved && Array.isArray(saved.board) && saved.board.length === localSize && !saved.over
+      && saved.board.some(row => row.some(v => v !== EMPTY))) {
+    // 继续上局
+    local.board = saved.board; local.current = saved.current; local.last = saved.last; local.over = false;
+    setStatus(`继续上局 · 当前回合：${stoneName(local.current)} (${localSize} 路)`);
+  } else {
+    local.board = Array.from({ length: localSize }, () => Array(localSize).fill(EMPTY));
+    local.current = BLACK; local.over = false; local.last = null;
+    setStatus(`当前回合：黑棋 ● (${localSize} 路)`);
+  }
   renderBoard(null);
+  localSave();
 }
 
 function localWin(r, c, p) {
@@ -56,6 +74,7 @@ function localMove(r, c) {
   else if (local.board.every(row => row.every(v => v !== EMPTY))) { local.over = true; setStatus('平局'); }
   else { local.current = local.current === BLACK ? WHITE : BLACK; setStatus(`当前回合：${stoneName(local.current)}`); }
   renderBoard(null);
+  localSave();
 }
 
 // ================== 在线对战 ==================
@@ -188,14 +207,15 @@ function renderUser() {
     menu.classList.remove('hidden');
     loginBox.classList.add('hidden');
     fCard.classList.remove('hidden');
+    $('recordBtn').classList.remove('hidden');
     nRow.classList.toggle('hidden', !('Notification' in window));
     $('notifyChk').checked = localStorage.getItem('gg_wzq_notify') === '1';
-    renderRecord();
   } else {
     menu.classList.add('hidden');
     loginBtn.classList.remove('hidden');
     // 未登录: 大厅显示登录框(除非用户选择了跳过, 顶栏"登录"按钮随时可唤出)
     if (mode !== 'game' && localStorage.getItem('gg_wzq_skip') !== '1') loginBox.classList.remove('hidden');
+    $('recordBtn').classList.add('hidden');
     fCard.classList.add('hidden');
     nRow.classList.add('hidden');
   }
@@ -207,20 +227,19 @@ document.addEventListener('click', e => {
   if (!$('userMenu').contains(e.target)) $('userDrop').classList.add('hidden');
 });
 
-// ---------- 我的战绩 (读 /api/history, 按昵称过滤) ----------
+// ---------- 我的战绩 (按钮 + 弹层, 读 /api/history 按昵称过滤) ----------
 function renderRecord() {
-  if (!me.user || mode === 'game') return;
+  if (!me.user) return;
   // 相对路径 → /gmk/api/history (nginx 按路径前缀反代)
   fetch('api/history').then(r => r.json()).then(d => {
     const mine = (d.recent || []).filter(h => Array.isArray(h.players) && h.players.includes(me.name));
-    $('recordCard').classList.remove('hidden');
     const wins = mine.filter(h => h.winner === me.name).length;
     const draws = mine.filter(h => h.winner === '平局').length;
     const losses = mine.length - wins - draws;
     $('recordSummary').textContent = `共 ${mine.length} 局 · 胜 ${wins} · 负 ${losses} · 平 ${draws}`;
     const list = $('recordList');
     list.innerHTML = '';
-    mine.slice(0, 10).forEach(h => {
+    mine.slice(0, 20).forEach(h => {
       const div = document.createElement('div');
       const isWin = h.winner === me.name, isDraw = h.winner === '平局';
       div.className = 'record-item ' + (isWin ? 'rec-win' : isDraw ? 'rec-draw' : 'rec-lose');
@@ -231,8 +250,12 @@ function renderRecord() {
         ` <span class="time">${time}</span>`;
       list.appendChild(div);
     });
-  }).catch(() => {});
+    if (!mine.length) list.innerHTML = '<p class="record-empty">还没有战绩, 快去下一局吧!</p>';
+  }).catch(() => { $('recordSummary').textContent = '战绩加载失败, 请稍后再试'; });
 }
+$('recordBtn').addEventListener('click', () => { renderRecord(); $('recordModal').classList.remove('hidden'); });
+$('recordClose').addEventListener('click', () => $('recordModal').classList.add('hidden'));
+$('recordModal').addEventListener('click', e => { if (e.target === $('recordModal')) $('recordModal').classList.add('hidden'); });
 
 function renderFriends() {
   const reqEl = $('friendReq'), listEl = $('friendList');
@@ -291,9 +314,10 @@ function renderTabs(myrooms) {
 function updateGameButtons() {
   const online = mode === 'game';
   $('exitBtn').classList.toggle('hidden', !online);
-  $('homeBtn').classList.toggle('hidden', !online);
+  // 本地和在线都有"返回大厅"; 仅大厅里隐藏
+  $('homeBtn').classList.toggle('hidden', mode === 'lobby');
   $('inviteBtn').classList.toggle('hidden', !(online && me.user));
-  $('resetBtn').classList.toggle('hidden', mode === 'local' ? false : false);
+  $('resetBtn').classList.toggle('hidden', false);
   chatLog.classList.toggle('hidden', !online);
   chatForm.classList.toggle('hidden', !online);
 }
@@ -375,7 +399,7 @@ $('localBtn').addEventListener('click', () => {
   mode = 'local';
   updateGameButtons();
   show(gameEl);
-  localReset();
+  localReset(true); // 有未结束的本地战局则继续
 });
 
 $('onlineBtn').addEventListener('click', () => { mode = 'online'; show(onlineEl); });
@@ -459,9 +483,19 @@ $('notifyChk').addEventListener('change', async e => {
   } catch (err) { setErr('⚠ 开启通知失败: ' + err.message); }
 });
 
+// 判断当前是否处于未结束的对局中 (退出前用于弹确认)
+function inOngoingGame() {
+  if (mode === 'local') return !local.over && local.board && local.board.some(row => row.some(v => v !== EMPTY));
+  if (mode === 'game' && activeRoom) {
+    const s = (rooms.get(activeRoom) || {}).state;
+    return s && !s.winner && !s.draw && (s.players || []).length === 2;
+  }
+  return false;
+}
+
 $('resetBtn').addEventListener('click', () => {
   if (mode === 'online') { if (activeRoom) oSend({ t: 'reset', code: activeRoom }); }
-  else localReset();
+  else if (confirm('确定重新开始吗? 当前本地战局将清空')) localReset(false);
 });
 
 $('exitBtn').addEventListener('click', () => {
@@ -469,8 +503,8 @@ $('exitBtn').addEventListener('click', () => {
 });
 
 $('homeBtn').addEventListener('click', () => {
+  if (inOngoingGame() && !confirm('对局还未结束, 确定要退出吗?')) return;
   mode = 'lobby';
-  if (rooms.size) { setStatus(''); }
   show(lobbyEl);
   renderUser();
 });

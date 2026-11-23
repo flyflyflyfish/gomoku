@@ -239,7 +239,53 @@ body {
 .cell.win .stone { outline: 2px solid #e53935; outline-offset: -2px; }
 
 /* ---- 战绩 ---- */
+.record-btn {
+  display: block;
+  margin: 10px auto 0;
+  font-size: 14px;
+  padding: 8px 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffdf5;
+  cursor: pointer;
+}
+.record-btn:hover { background: #f4e9cf; }
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(58, 47, 34, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  width: min(92vw, 420px);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.modal-head button {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #9a8a6d;
+  padding: 4px 8px;
+}
 .record-summary { font-size: 15px; font-weight: 700; margin: 4px 0 10px; }
+.record-empty { color: #9a8a6d; font-size: 13px; text-align: center; padding: 12px 0; }
 .record-list { text-align: left; font-size: 13px; max-height: 200px; overflow-y: auto; }
 .record-item {
   display: flex;
