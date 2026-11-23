@@ -120,6 +120,7 @@ function handleMsg(m) {
     case 'auth_fail': {
       localStorage.removeItem('gg_wzq_token');
       me.token = null; renderUser();
+      setErr('⚠ 账号或密码错误');
       break;
     }
     case 'friends': me.friends = m.friends || []; me.requests = m.requests || []; renderFriends(); break;
@@ -187,7 +188,9 @@ function renderUser() {
   } else {
     chip.textContent = '';
     chip.classList.add('hidden'); out.classList.add('hidden');
-    if (mode !== 'game') loginBox.classList.remove('hidden');
+    // 未登录: 大厅显示登录框(除非用户选择了跳过, 顶栏"登录"按钮随时可唤出)
+    if (mode !== 'game' && localStorage.getItem('gg_wzq_skip') !== '1') loginBox.classList.remove('hidden');
+    $('showLoginBtn').classList.toggle('hidden', mode === 'game');
     fCard.classList.add('hidden');
     nRow.classList.add('hidden');
   }
@@ -380,10 +383,18 @@ $('regBtn').addEventListener('click', () => {
   oSend({ t: 'register', user, pass, name });
 });
 $('skipBtn').addEventListener('click', () => { $('loginBox').classList.add('hidden'); localStorage.setItem('gg_wzq_skip', '1'); });
+$('showLoginBtn').addEventListener('click', () => {
+  localStorage.removeItem('gg_wzq_skip'); // 手动想登录了, 清掉跳过标记
+  $('loginBox').classList.remove('hidden');
+  $('loginUser').focus();
+});
 $('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('gg_wzq_token');
   localStorage.removeItem('gg_wzq_sids');
   localStorage.removeItem('gg_wzq_notify');
+  localStorage.removeItem('gg_wzq_skip');
+  me.user = null; me.name = null; me.token = null; me.friends = []; me.requests = [];
+  renderUser();
   oSend({ t: 'logout' });
 });
 
@@ -443,6 +454,7 @@ chatForm.addEventListener('submit', e => {
 (function boot() {
   me.token = localStorage.getItem('gg_wzq_token');
   if (localStorage.getItem('gg_wzq_skip') === '1') $('loginBox').classList.add('hidden');
+  renderUser(); // 初始化顶栏 (未登录时显示"登录"按钮, 保证随时可以登录)
   oConnect();
   // 首次进入: 有房号参数则直接进; 否则停在大厅
   if (pendingRoom) show(gameEl), (mode = 'game'), updateGameButtons();
