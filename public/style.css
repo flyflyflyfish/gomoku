@@ -2,6 +2,7 @@
   --bg: #f7f3e9;
   --line: #b8965a;
   --wood: #e8c98f;
+  --green: #4caf7d;
 }
 
 * { box-sizing: border-box; }
@@ -17,71 +18,162 @@ body {
 }
 
 .container {
-  padding: 24px 16px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
   width: 100%;
-  max-width: 560px;
+  max-width: 640px;
   text-align: center;
 }
 
-h1 { margin: 0 0 16px; font-size: 28px; }
-
 .hidden { display: none !important; }
 
-/* ---- 大厅 ---- */
-.lobby { margin-top: 12vh; }
-.lobby-title { font-size: 16px; margin: 18px 0 12px; }
-.lobby-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.big {
+/* ---- 顶栏 ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.topbar h1 { margin: 8px 0; font-size: clamp(18px, 4.5vw, 26px); }
+.topbar-btns { display: flex; align-items: center; gap: 8px; }
+#fsBtn {
   font-size: 18px;
-  padding: 14px 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.user-chip { font-size: 14px; font-weight: 600; }
+
+.panel { margin-top: 4px; }
+
+/* ---- 卡片 ---- */
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 10px auto;
+  max-width: 460px;
+}
+.card-title { font-size: 16px; font-weight: 700; margin: 0 0 10px; }
+.card-title small { font-weight: 400; color: #9a8a6d; }
+.card-sub { font-size: 13px; color: #7a6a50; margin: 10px 0 6px; }
+
+.form-row { display: flex; gap: 8px; justify-content: center; margin: 6px 0; flex-wrap: wrap; }
+.form-row input {
+  font-size: 15px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  flex: 1;
+  min-width: 110px;
+  max-width: 200px;
+}
+.form-row.btns { align-items: center; }
+.form-row button {
+  font-size: 15px;
+  padding: 8px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.form-row button.primary { background: var(--green); color: #fff; border-color: var(--green); }
+.code-input { letter-spacing: 6px; max-width: 120px !important; text-align: center; }
+.link { background: none; border: none; color: #7a6a50; cursor: pointer; font-size: 14px; }
+.notify-row { font-size: 13px; color: #7a6a50; margin: 8px 0 0; }
+.opt-row { font-size: 14px; margin: 6px 0; }
+.opt-row select { font-size: 14px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); }
+
+/* ---- 大厅按钮 ---- */
+.lobby-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 8px 0; }
+.big {
+  font-size: 17px;
+  padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: #4caf7d;
+  background: var(--green);
   color: #fff;
   cursor: pointer;
 }
 .big:hover { background: #3f9e6e; }
-.link {
-  background: none;
-  border: none;
-  color: #7a6a50;
-  cursor: pointer;
-  margin-top: 24px;
-  font-size: 14px;
-}
-.name-input, .code-input {
-  font-size: 16px;
-  padding: 8px 12px;
+.bot-btn {
+  font-size: 15px;
+  padding: 10px 16px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  width: 140px;
-  text-align: center;
-}
-.code-input { letter-spacing: 6px; width: 110px; }
-.join-title button {
-  font-size: 16px;
-  padding: 8px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #4caf7d;
-  color: #fff;
+  border-radius: 10px;
+  background: #fffdf5;
   cursor: pointer;
 }
+.bot-btn:hover { background: #f4e9cf; }
+
+/* ---- 好友列表 ---- */
+.friend-list { text-align: left; font-size: 14px; max-height: 180px; overflow-y: auto; }
+.friend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px dashed #eee2c8;
+}
+.friend-item .dot { width: 9px; height: 9px; border-radius: 50%; background: #ccc; flex: none; }
+.friend-item .dot.on { background: #4caf7d; }
+.friend-item .name { flex: 1; }
+.friend-item button {
+  font-size: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+.friend-item button.primary { background: var(--green); color: #fff; border-color: var(--green); }
 
 /* ---- 状态栏 ---- */
-#status { font-size: 17px; min-height: 26px; margin: 6px 0 12px; font-weight: 600; }
+#status, #status2 { font-size: 16px; min-height: 24px; margin: 6px 0 10px; font-weight: 600; }
 
-/* ---- 棋盘 ---- */
+/* ---- 多局标签 ---- */
+.room-tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 4px 0; }
+.room-tabs:empty { display: none; }
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+}
+.tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+.tab .badge {
+  min-width: 16px; height: 16px;
+  line-height: 16px;
+  border-radius: 8px;
+  background: #e53935;
+  color: #fff;
+  font-size: 10px;
+  padding: 0 3px;
+}
+
+/* ---- 棋盘 (横竖屏自适应: 取视口短边) ---- */
 .board {
   display: grid;
-  grid-template-columns: repeat(15, 1fr);
-  width: min(92vw, 480px);
+  width: min(92vmin, 560px);
+  height: min(92vmin, 560px);
   aspect-ratio: 1;
   margin: 0 auto;
   background: var(--wood);
   border: 2px solid var(--line);
   border-radius: 4px;
   touch-action: manipulation;
+}
+/* 横屏时限制高度避免溢出, 棋盘靠左信息靠右也可纵向排列 */
+@media (orientation: landscape) and (max-height: 560px) {
+  .board { width: auto; height: 88vh; }
+  .container { max-width: 100vw; }
 }
 .cell {
   position: relative;
@@ -90,7 +182,7 @@ h1 { margin: 0 0 16px; font-size: 28px; }
 }
 .stone {
   position: absolute;
-  inset: 12%;
+  inset: 10%;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
@@ -100,8 +192,8 @@ h1 { margin: 0 0 16px; font-size: 28px; }
   content: "";
   position: absolute;
   top: 50%; left: 50%;
-  width: 8px; height: 8px;
-  margin: -4px 0 0 -4px;
+  width: 40%; height: 40%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #e53935;
   z-index: 2;
@@ -109,49 +201,44 @@ h1 { margin: 0 0 16px; font-size: 28px; }
 .cell.win .stone { outline: 2px solid #e53935; outline-offset: -2px; }
 
 /* ---- 工具栏 / 聊天 ---- */
-.toolbar { margin: 16px 0 8px; display: flex; gap: 10px; justify-content: center; }
+.toolbar { margin: 12px 0 6px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .toolbar button {
-  font-size: 15px;
-  padding: 9px 22px;
+  font-size: 14px;
+  padding: 8px 18px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fff;
   cursor: pointer;
 }
 .chat-log {
-  max-height: 140px;
+  max-height: 130px;
   overflow-y: auto;
   text-align: left;
-  font-size: 14px;
+  font-size: 13px;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 12px;
-  margin: 8px auto 0;
-  width: min(92vw, 480px);
+  margin: 6px auto 0;
+  width: min(92vmin, 560px);
 }
 .chat-log p { margin: 3px 0; }
 .chat-log .sys { color: #9a8a6d; font-size: 12px; }
-.chat-form { display: flex; gap: 8px; margin: 8px auto 0; width: min(92vw, 480px); }
+.chat-form { display: flex; gap: 8px; margin: 6px auto 0; width: min(92vmin, 560px); }
 .chat-form input {
   flex: 1;
   font-size: 14px;
-  padding: 8px 12px;
+  padding: 7px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
 .chat-form button {
   border: none;
   border-radius: 8px;
-  background: #4caf7d;
+  background: var(--green);
   color: #fff;
   cursor: pointer;
-  padding: 0 18px;
+  padding: 0 16px;
 }
 
-#msgErr {
-  color: #c0392b;
-  font-size: 14px;
-  min-height: 20px;
-  margin: 4px 0;
-}
+#msgErr { color: #c0392b; font-size: 13px; min-height: 18px; margin: 4px 0; }

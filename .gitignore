@@ -1,2 +1,4 @@
+server/accounts.json
+server/secrets.json
 node_modules/
 server/history.json
