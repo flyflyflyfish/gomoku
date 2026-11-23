@@ -1,0 +1,157 @@
+:root {
+  --bg: #f7f3e9;
+  --line: #b8965a;
+  --wood: #e8c98f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: #3a2f22;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  padding: 24px 16px;
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+}
+
+h1 { margin: 0 0 16px; font-size: 28px; }
+
+.hidden { display: none !important; }
+
+/* ---- 大厅 ---- */
+.lobby { margin-top: 12vh; }
+.lobby-title { font-size: 16px; margin: 18px 0 12px; }
+.lobby-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.big {
+  font-size: 18px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  background: #4caf7d;
+  color: #fff;
+  cursor: pointer;
+}
+.big:hover { background: #3f9e6e; }
+.link {
+  background: none;
+  border: none;
+  color: #7a6a50;
+  cursor: pointer;
+  margin-top: 24px;
+  font-size: 14px;
+}
+.name-input, .code-input {
+  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  width: 140px;
+  text-align: center;
+}
+.code-input { letter-spacing: 6px; width: 110px; }
+.join-title button {
+  font-size: 16px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #4caf7d;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* ---- 状态栏 ---- */
+#status { font-size: 17px; min-height: 26px; margin: 6px 0 12px; font-weight: 600; }
+
+/* ---- 棋盘 ---- */
+.board {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  width: min(92vw, 480px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: var(--wood);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  touch-action: manipulation;
+}
+.cell {
+  position: relative;
+  cursor: pointer;
+  border: 0.5px solid rgba(184, 150, 90, 0.55);
+}
+.stone {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.stone.black { background: radial-gradient(circle at 35% 30%, #555, #000); }
+.stone.white { background: radial-gradient(circle at 35% 30%, #fff, #ccc); }
+.cell.last::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #e53935;
+  z-index: 2;
+}
+.cell.win .stone { outline: 2px solid #e53935; outline-offset: -2px; }
+
+/* ---- 工具栏 / 聊天 ---- */
+.toolbar { margin: 16px 0 8px; display: flex; gap: 10px; justify-content: center; }
+.toolbar button {
+  font-size: 15px;
+  padding: 9px 22px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+.chat-log {
+  max-height: 140px;
+  overflow-y: auto;
+  text-align: left;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px auto 0;
+  width: min(92vw, 480px);
+}
+.chat-log p { margin: 3px 0; }
+.chat-log .sys { color: #9a8a6d; font-size: 12px; }
+.chat-form { display: flex; gap: 8px; margin: 8px auto 0; width: min(92vw, 480px); }
+.chat-form input {
+  flex: 1;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.chat-form button {
+  border: none;
+  border-radius: 8px;
+  background: #4caf7d;
+  color: #fff;
+  cursor: pointer;
+  padding: 0 18px;
+}
+
+#msgErr {
+  color: #c0392b;
+  font-size: 14px;
+  min-height: 20px;
+  margin: 4px 0;
+}
