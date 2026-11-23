@@ -13,6 +13,24 @@ const tabsEl = $('roomTabs');
 const chatLog = $('chatLog'), chatForm = $('chatForm'), chatInput = $('chatInput');
 
 function show(el) { [lobbyEl, onlineEl, gameEl].forEach(x => x.classList.add('hidden')); el.classList.remove('hidden'); }
+
+// ---- 页面内导航: 把 视图切换 写进浏览器历史, 让手机返回键在 棋局→在线面板→玩法大厅 之间逐级回退,
+//      而不是直接退出到站外(果果大厅)。退出对局视图后, 大厅里用"回到对局"按钮随时回去 ----
+function ensurePush(v) { if (!history.state || history.state.view !== v) history.pushState({ view: v }, ''); }
+function applyView(v) {
+  if (v === 'game') {
+    if (mode === 'local') { show(gameEl); return; } // 本地对战棋盘常驻可回
+    if (rooms.size) {
+      mode = 'game';
+      if (!activeRoom || !rooms.has(activeRoom)) activeRoom = [...rooms.keys()][0];
+      updateGameButtons(); show(gameEl); renderTabs(null); renderActive(); return;
+    }
+    v = 'lobby'; // 对局已不存在, 落回玩法大厅
+  }
+  if (v === 'online') { mode = 'online'; show(onlineEl); updateResumeBtn(); return; }
+  mode = 'lobby'; show(lobbyEl); renderUser(); updateResumeBtn();
+}
+window.addEventListener('popstate', e => applyView((e.state && e.state.view) || 'lobby'));
 function setStatus(t) { statusEl.textContent = t; }
 function setErr(t) { errEl.textContent = t || ''; setTimeout(() => { if (errEl.textContent === t) errEl.textContent = ''; }, 4000); }
 function stoneName(p) { return p === BLACK ? '黑棋 ●' : '白棋 ○'; }
@@ -161,7 +179,8 @@ function handleMsg(m) {
       rooms.delete(m.code);
       if (activeRoom === m.code) activeRoom = [...rooms.keys()][0] || null;
       renderTabs(null);
-      if (activeRoom) renderActive(); else show(lobbyEl);
+      if (activeRoom) renderActive();
+      else { mode = 'lobby'; show(lobbyEl); renderUser(); updateResumeBtn(); }
       break;
     }
     case 'resume_fail': {
@@ -181,6 +200,7 @@ function onWelcome(m) {
   sids[m.code] = m.sid;
   localStorage.setItem('gg_wzq_sids', JSON.stringify(sids));
   mode = 'game';
+  ensurePush('game');
   show(gameEl);
   updateGameButtons();
   chatLog.innerHTML = '';
@@ -311,7 +331,26 @@ function renderTabs(myrooms) {
     tab.onclick = () => { activeRoom = code; renderTabs(null); renderActive(); };
     tabsEl.appendChild(tab);
   }
+  updateResumeBtn();
 }
+
+// 大厅里的"回到对局"按钮: 退出对局视图(返回键/返回大厅)后, 对局仍在服务端继续, 由此随时回去
+function updateResumeBtn() {
+  const btn = $('resumeRoomsBtn');
+  const showIt = mode === 'lobby' && rooms.size > 0;
+  btn.classList.toggle('hidden', !showIt);
+  if (showIt) {
+    const code = activeRoom && rooms.has(activeRoom) ? activeRoom : [...rooms.keys()][0];
+    btn.textContent = `▶ 回到对局 #${code}`;
+  }
+}
+
+$('resumeRoomsBtn').addEventListener('click', () => {
+  if (!rooms.size) return;
+  if (!activeRoom || !rooms.has(activeRoom)) activeRoom = [...rooms.keys()][0];
+  mode = 'game'; updateGameButtons(); ensurePush('game');
+  show(gameEl); renderTabs(null); renderActive();
+});
 
 function updateGameButtons() {
   const online = mode === 'game';
@@ -400,16 +439,21 @@ $('localBtn').addEventListener('click', () => {
   localStorage.setItem('gg_wzq_local_size', $('localSizeSel').value);
   mode = 'local';
   updateGameButtons();
+  ensurePush('game');
   show(gameEl);
   localReset(true); // 有未结束的本地战局则继续
 });
 
-$('onlineBtn').addEventListener('click', () => { mode = 'online'; show(onlineEl); });
-$('backBtn').addEventListener('click', () => { mode = 'lobby'; show(lobbyEl); });
+$('onlineBtn').addEventListener('click', () => { mode = 'online'; ensurePush('online'); show(onlineEl); });
+$('backBtn').addEventListener('click', () => {
+  if (history.state && history.state.view) history.back(); // 回退到上一视图(通常是玩法大厅)
+  else applyView('lobby');
+});
 
 function createRoom(bot) {
   mode = 'game';
   updateGameButtons();
+  ensurePush('game');
   show(gameEl);
   setStatus('正在创建房间…');
   oSend({ t: 'join', name: me.name || localStorage.getItem('gg_wzq_nick') || '玩家', size: Number($('sizeSel').value), bot });
@@ -425,6 +469,7 @@ $('joinRoomBtn').addEventListener('click', () => {
   if (!/^\d{4}$/.test(code)) { setErr('请输入 4 位房间号'); return; }
   mode = 'game';
   updateGameButtons();
+  ensurePush('game');
   show(gameEl);
   setStatus('正在加入房间…');
   oSend({ t: 'join', code, name: me.name || localStorage.getItem('gg_wzq_nick') || '玩家' });
@@ -508,9 +553,9 @@ $('exitBtn').addEventListener('click', () => {
 
 $('homeBtn').addEventListener('click', () => {
   if (inOngoingGame() && !confirm('对局还未结束, 确定要退出吗?')) return;
-  mode = 'lobby';
-  show(lobbyEl);
-  renderUser();
+  // 对局仍留在服务端, 只是视图回大厅; 用历史回退保持返回键行为一致
+  if (history.state && history.state.view && history.state.view !== 'lobby') history.back();
+  else { history.replaceState({ view: 'lobby' }, ''); applyView('lobby'); }
 });
 
 $('inviteBtn').addEventListener('click', () => {
@@ -535,8 +580,10 @@ window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); }
   me.token = localStorage.getItem('gg_wzq_token');
   renderUser(); // 初始化顶栏与大厅 (未登录: 登录卡收起, 只显示小"登录"按钮)
   oConnect();
-  // 首次进入: 有房号参数则直接进; 否则停在大厅
-  if (pendingRoom) show(gameEl), (mode = 'game'), updateGameButtons();
+  // 建立历史基点: 返回键先在页面内逐级回退, 退无可退才离开本页
+  history.replaceState({ view: 'lobby' }, '');
+  // 首次进入: 有房号参数则直接进对局 (再按返回回到大厅, 可用"回到对局"按钮回去)
+  if (pendingRoom) { show(gameEl), (mode = 'game'), updateGameButtons(); history.pushState({ view: 'game' }, ''); }
 })();
 
 renderBoard(null);
