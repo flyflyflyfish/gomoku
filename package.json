@@ -4,7 +4,8 @@
   "description": "果果五子棋 - 15×15 棋盘, 本地双人 + 在线联机对战",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "test": "node server/test.js"
   },
   "dependencies": {
     "express": "^4.19.0",
