@@ -11,10 +11,14 @@
       <header class="topbar">
         <h1>果果五子棋 🍈</h1>
         <div class="topbar-btns">
+          <button id="showLoginBtn" type="button" class="link">登录</button>
+          <div id="userMenu" class="user-menu hidden">
+            <button id="userBtn" type="button" title="账号菜单"></button>
+            <div id="userDrop" class="user-drop hidden">
+              <button id="logoutBtn" type="button">退出登录</button>
+            </div>
+          </div>
           <button id="fsBtn" type="button" title="全屏">⛶</button>
-          <button id="showLoginBtn" type="button" class="link hidden">登录</button>
-          <span id="userChip" class="user-chip hidden"></span>
-          <button id="logoutBtn" type="button" class="link hidden">退出</button>
         </div>
       </header>
 
@@ -42,6 +46,12 @@
         <div class="card">
           <p class="card-title">选择玩法</p>
           <div class="lobby-btns">
+            <span class="opt-row">棋盘
+              <select id="localSizeSel">
+                <option value="15">15 路 (经典)</option>
+                <option value="19">19 路 (大盘)</option>
+              </select>
+            </span>
             <button id="localBtn" type="button" class="big">👫 本地对战</button>
             <button id="onlineBtn" type="button" class="big">🌐 在线对战</button>
           </div>
@@ -56,6 +66,13 @@
           </div>
           <div id="friendReq" class="friend-list"></div>
           <div id="friendList" class="friend-list"></div>
+        </div>
+
+        <!-- 战绩 (登录后显示) -->
+        <div id="recordCard" class="card hidden">
+          <p class="card-title">我的战绩</p>
+          <p id="recordSummary" class="record-summary">…</p>
+          <div id="recordList" class="record-list"></div>
         </div>
       </section>
 
@@ -75,9 +92,9 @@
             <button id="createRoomBtn" type="button" class="big">👫 等好友加入</button>
           </div>
           <div class="lobby-btns">
-            <button id="botEasy" type="button" class="bot-btn">🐟 蓝色大肥鱼</button>
-            <button id="botMed" type="button" class="bot-btn">🫘 豆包</button>
-            <button id="botHard" type="button" class="bot-btn">⚡ Z</button>
+            <button id="botEasy" type="button" class="bot-btn">🍎 新手</button>
+            <button id="botMed" type="button" class="bot-btn">🍌 进阶</button>
+            <button id="botHard" type="button" class="bot-btn">🍈 高手</button>
           </div>
           <p class="card-sub">或加入好友房间</p>
           <div class="form-row">

@@ -20,7 +20,7 @@ body {
 .container {
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
   width: 100%;
-  max-width: 640px;
+  max-width: 780px;
   text-align: center;
 }
 
@@ -44,6 +44,44 @@ body {
   cursor: pointer;
 }
 .user-chip { font-size: 14px; font-weight: 600; }
+.user-menu { position: relative; }
+#userBtn {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-drop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  min-width: 120px;
+}
+.user-drop button {
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  color: #c0392b;
+}
+.user-drop button:hover { background: #f7f3e9; }
 
 .panel { margin-top: 4px; }
 
@@ -161,8 +199,8 @@ body {
 /* ---- 棋盘 (横竖屏自适应: 取视口短边) ---- */
 .board {
   display: grid;
-  width: min(92vmin, 560px);
-  height: min(92vmin, 560px);
+  width: min(92vmin, 720px);
+  height: min(92vmin, 720px);
   aspect-ratio: 1;
   margin: 0 auto;
   background: var(--wood);
@@ -200,6 +238,31 @@ body {
 }
 .cell.win .stone { outline: 2px solid #e53935; outline-offset: -2px; }
 
+/* ---- 战绩 ---- */
+.record-summary { font-size: 15px; font-weight: 700; margin: 4px 0 10px; }
+.record-list { text-align: left; font-size: 13px; max-height: 200px; overflow-y: auto; }
+.record-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px dashed #eee2c8;
+}
+.record-item .res {
+  flex: none;
+  width: 24px; height: 24px;
+  line-height: 24px;
+  text-align: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rec-win .res { background: var(--green); }
+.rec-lose .res { background: #e57373; }
+.rec-draw .res { background: #b0a48c; }
+.record-item .time { margin-left: auto; color: #9a8a6d; font-size: 12px; flex: none; }
+
 /* ---- 工具栏 / 聊天 ---- */
 .toolbar { margin: 12px 0 6px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .toolbar button {
@@ -220,11 +283,11 @@ body {
   border-radius: 8px;
   padding: 8px 12px;
   margin: 6px auto 0;
-  width: min(92vmin, 560px);
+  width: min(92vmin, 720px);
 }
 .chat-log p { margin: 3px 0; }
 .chat-log .sys { color: #9a8a6d; font-size: 12px; }
-.chat-form { display: flex; gap: 8px; margin: 6px auto 0; width: min(92vmin, 560px); }
+.chat-form { display: flex; gap: 8px; margin: 6px auto 0; width: min(92vmin, 720px); }
 .chat-form input {
   flex: 1;
   font-size: 14px;

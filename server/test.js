@@ -83,7 +83,7 @@ class Client {
   check('创建 19 路 AI 房间(Z)', wA.seat === 0);
   A.send({ t: 'move', code: wA.code, row: 9, col: 9 });
   const st = await A.wait(m => m.t === 'state' && m.players.length === 2 && m.moves === 2 && m.board && m.board[9][9] === 1, 8000);
-  check('AI 应答落子', st.moves === 2 && st.players[1].name === 'Z');
+  check('AI 应答落子', st.moves === 2 && st.players[1].name === '高手果果');
   // 人下第二手 → AI 应答
   A.send({ t: 'move', code: wA.code, row: 9, col: 8 });
   const st2 = await A.wait(m => m.t === 'state' && m.moves === 4, 8000);

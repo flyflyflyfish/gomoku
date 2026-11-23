@@ -4,7 +4,7 @@
 
 const SIZE_MAX = 19;
 const EMPTY = 0, BLACK = 1, WHITE = 2;
-const BOT_LABEL = { easy: '🐟 蓝色大肥鱼', medium: '🫘 豆包', hard: '⚡ Z' };
+const BOT_LABEL = { easy: '🍎 新手', medium: '🍌 进阶', hard: '🍈 高手' };
 
 const $ = id => document.getElementById(id);
 const lobbyEl = $('lobby'), onlineEl = $('onlinePanel'), gameEl = $('gameArea');
@@ -25,20 +25,23 @@ $('fsBtn').addEventListener('click', () => {
 
 // ================== 本地对战 (原版逻辑) ==================
 const local = { board: null, current: BLACK, over: false, mode: 'lobby', last: null };
+let localSize = 15;
 
 function localReset() {
-  local.board = Array.from({ length: 15 }, () => Array(15).fill(EMPTY));
+  localSize = Number(localStorage.getItem('gg_wzq_local_size') || 15);
+  local.board = Array.from({ length: localSize }, () => Array(localSize).fill(EMPTY));
   local.current = BLACK; local.over = false; local.last = null;
-  setStatus('当前回合：黑棋 ●');
+  setStatus(`当前回合：黑棋 ● (${localSize} 路)`);
   renderBoard(null);
 }
 
 function localWin(r, c, p) {
+  const n0 = localSize;
   for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
     let n = 1;
     for (const s of [1, -1]) {
       let rr = r + dr * s, cc = c + dc * s;
-      while (rr >= 0 && rr < 15 && cc >= 0 && cc < 15 && local.board[rr][cc] === p) { n++; rr += dr * s; cc += dc * s; }
+      while (rr >= 0 && rr < n0 && cc >= 0 && cc < n0 && local.board[rr][cc] === p) { n++; rr += dr * s; cc += dc * s; }
     }
     if (n >= 5) return true;
   }
@@ -176,24 +179,59 @@ function onState(m) {
 
 // ---------- 渲染 ----------
 function renderUser() {
-  const chip = $('userChip'), out = $('logoutBtn'), loginBox = $('loginBox');
+  const loginBtn = $('showLoginBtn'), menu = $('userMenu'), drop = $('userDrop');
   const fCard = $('friendsCard'), nRow = $('notifyRow');
+  drop.classList.add('hidden');
   if (me.user) {
-    chip.textContent = '👤 ' + me.name;
-    chip.classList.remove('hidden'); out.classList.remove('hidden');
+    $('userBtn').textContent = '👤 ' + me.name;
+    loginBtn.classList.add('hidden');
+    menu.classList.remove('hidden');
     loginBox.classList.add('hidden');
     fCard.classList.remove('hidden');
     nRow.classList.toggle('hidden', !('Notification' in window));
     $('notifyChk').checked = localStorage.getItem('gg_wzq_notify') === '1';
+    renderRecord();
   } else {
-    chip.textContent = '';
-    chip.classList.add('hidden'); out.classList.add('hidden');
+    menu.classList.add('hidden');
+    loginBtn.classList.remove('hidden');
     // 未登录: 大厅显示登录框(除非用户选择了跳过, 顶栏"登录"按钮随时可唤出)
     if (mode !== 'game' && localStorage.getItem('gg_wzq_skip') !== '1') loginBox.classList.remove('hidden');
-    $('showLoginBtn').classList.toggle('hidden', mode === 'game');
     fCard.classList.add('hidden');
     nRow.classList.add('hidden');
   }
+}
+
+// 点击昵称弹出菜单, 点其他区域收起
+$('userBtn').addEventListener('click', e => { e.stopPropagation(); $('userDrop').classList.toggle('hidden'); });
+document.addEventListener('click', e => {
+  if (!$('userMenu').contains(e.target)) $('userDrop').classList.add('hidden');
+});
+
+// ---------- 我的战绩 (读 /api/history, 按昵称过滤) ----------
+function renderRecord() {
+  if (!me.user || mode === 'game') return;
+  // 相对路径 → /gmk/api/history (nginx 按路径前缀反代)
+  fetch('api/history').then(r => r.json()).then(d => {
+    const mine = (d.recent || []).filter(h => Array.isArray(h.players) && h.players.includes(me.name));
+    $('recordCard').classList.remove('hidden');
+    const wins = mine.filter(h => h.winner === me.name).length;
+    const draws = mine.filter(h => h.winner === '平局').length;
+    const losses = mine.length - wins - draws;
+    $('recordSummary').textContent = `共 ${mine.length} 局 · 胜 ${wins} · 负 ${losses} · 平 ${draws}`;
+    const list = $('recordList');
+    list.innerHTML = '';
+    mine.slice(0, 10).forEach(h => {
+      const div = document.createElement('div');
+      const isWin = h.winner === me.name, isDraw = h.winner === '平局';
+      div.className = 'record-item ' + (isWin ? 'rec-win' : isDraw ? 'rec-draw' : 'rec-lose');
+      const opponent = (h.players || []).filter(p => p !== me.name).join(', ') || '—';
+      const time = new Date(h.ts).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      div.innerHTML = `<span class="res">${isWin ? '胜' : isDraw ? '平' : '负'}</span>` +
+        ` vs ${opponent} · ${h.moves || '?'} 手` +
+        ` <span class="time">${time}</span>`;
+      list.appendChild(div);
+    });
+  }).catch(() => {});
 }
 
 function renderFriends() {
@@ -284,7 +322,7 @@ function renderActive() {
 
 function renderBoard(s, locked) {
   boardEl.innerHTML = '';
-  const size = s ? s.size : 15;
+  const size = s ? s.size : local.board.length;
   boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
   const b = s ? s.board : local.board;
   const line = new Set(s && s.winLine ? s.winLine.map(x => `${x.row},${x.col}`) : []);
@@ -333,6 +371,7 @@ function applyPendingInvites() {
 
 // ================== 事件绑定 ==================
 $('localBtn').addEventListener('click', () => {
+  localStorage.setItem('gg_wzq_local_size', $('localSizeSel').value);
   mode = 'local';
   updateGameButtons();
   show(gameEl);

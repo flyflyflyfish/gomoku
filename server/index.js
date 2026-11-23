@@ -144,7 +144,7 @@ function pushFriendsAll() {
 const rooms = new Map();       // code -> room
 const sidIndex = new Map();    // sid -> { code, seat }
 
-const BOT_NAMES = { easy: '蓝色大肥鱼', medium: '豆包', hard: 'Z' };
+const BOT_NAMES = { easy: '新手果果', medium: '进阶果果', hard: '高手果果' };
 
 function newCode() {
   let c;
